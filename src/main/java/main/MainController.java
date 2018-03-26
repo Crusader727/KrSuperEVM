@@ -5,11 +5,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
-import javafx.scene.chart.PieChart;
+import javafx.scene.chart.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import main.dao.MainDAO;
+import main.models.SecondQueryModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import main.service.PersonGenerator;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @RestController
@@ -77,7 +79,7 @@ public class MainController {
     }
 
     @RequestMapping(path = "/create", method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<?> createDiagram() {
+    public ResponseEntity<?> createDiagramEmployees() {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -101,13 +103,53 @@ public class MainController {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
+    @RequestMapping(path = "/create2", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> createDiagramSecondQuery() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Stage primaryStage = Application.primaryStage;
+                primaryStage.setTitle("Bar Chart Sample");
+                final CategoryAxis xAxis = new CategoryAxis();
+                final NumberAxis yAxis = new NumberAxis();
+                final BarChart<String, Number> bc =
+                        new BarChart<String, Number>(xAxis, yAxis);
+                bc.setTitle("Museum Summary");
+                xAxis.setLabel("Museum Name");
+                yAxis.setLabel("Value");
+
+                List<SecondQueryModel> list = dao.getTicketAndExhibitCount();
+
+                XYChart.Series series1 = new XYChart.Series();
+                series1.setName("TicketCount  ");
+                for (SecondQueryModel key : list) {
+                    series1.getData().add(new XYChart.Data(key.getMuseumName(), key.getCount()));
+                }
+                XYChart.Series series2 = new XYChart.Series();
+                series2.setName("TotalPrice / 1000");
+                for (SecondQueryModel key : list) {
+                    series2.getData().add(new XYChart.Data(key.getMuseumName(), key.getSum()/1000));
+                }
+
+                Scene scene = new Scene(bc, 800, 600);
+                bc.getData().addAll(series1, series2);
+                primaryStage.setScene(scene);
+                primaryStage.show();
+            }
+        });
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    }
+
     private ObservableList<PieChart.Data> getAllWorkers() {
         ObservableList<PieChart.Data> answer = FXCollections.observableArrayList();
 
         ArrayList<Pair<String, Integer>> employees = dao.getWorkers();
-        for(Pair key : employees) {
-            answer.add(new PieChart.Data(key.getKey().toString(), (Integer)key.getValue()));
+        for (Pair key : employees) {
+            answer.add(new PieChart.Data(key.getKey().toString(), (Integer) key.getValue()));
         }
         return answer;
     }
+
+
 }

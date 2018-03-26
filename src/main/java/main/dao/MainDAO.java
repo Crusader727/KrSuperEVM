@@ -1,14 +1,17 @@
 package main.dao;
 
 import javafx.util.Pair;
+import main.models.SecondQueryModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MainDAO {
@@ -148,5 +151,25 @@ public class MainDAO {
                 "select count(*) from employee where position = CAST(? as post);",
                 new Object[]{position}, Integer.class);
     }
+
+    public List<SecondQueryModel> getTicketAndExhibitCount() {
+
+        return template.query(
+                "SELECT\n" +
+                        "  count(T.*),\n" +
+                        "  sum(T.price),\n" +
+                        "  M.name\n" +
+                        "FROM Ticket T\n" +
+                        "  JOIN Exhibition E ON T.exhibiton_id = E.id\n" +
+                        "  JOIN Pavilion P ON E.pavilion_id = P.id\n" +
+                        "  JOIN Museums M ON P.museum_id = M.id\n" +
+                        "GROUP BY M.name;",
+                new Object[]{}, TICKETCOUNT_PRICE);
+    }
+
+    private static final RowMapper<SecondQueryModel> TICKETCOUNT_PRICE = (res, num) -> {
+        return new SecondQueryModel(res.getString("name"), res.getInt("sum")
+                , res.getInt("count"));
+    };
 }
 
