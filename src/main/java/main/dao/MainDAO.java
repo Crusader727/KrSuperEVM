@@ -1,5 +1,6 @@
 package main.dao;
 
+import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 @Service
 public class MainDAO {
@@ -124,6 +126,27 @@ public class MainDAO {
 
             return pst;
         }, keyHolder);
+    }
+
+    public ArrayList<Pair<String, Integer>> getWorkers() {
+        ArrayList<Pair<String, Integer>> result = new ArrayList<>();
+        Integer viceCount = getCount("vice");
+        result.add(new Pair<String, Integer>("Vice: " + viceCount, viceCount));
+        Integer headmasterCount = getCount("headmaster");
+        result.add(new Pair<String, Integer>("Headmaster: " + headmasterCount, headmasterCount));
+        Integer guideCount = getCount("guide");
+        result.add(new Pair<String, Integer>("Guide: " + guideCount, guideCount));
+        Integer guardCount = getCount("guard");
+        result.add(new Pair<String, Integer>("Guard: " + guardCount, guardCount));
+        Integer managerCount = getCount("manager");
+        result.add(new Pair<String, Integer>("Manager: " + managerCount, managerCount));
+        return result;
+    }
+
+    public Integer getCount(String position) {
+        return template.queryForObject(
+                "select count(*) from employee where position = CAST(? as post);",
+                new Object[]{position}, Integer.class);
     }
 }
 
