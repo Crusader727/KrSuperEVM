@@ -102,6 +102,44 @@ public class MainController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
+    @RequestMapping(path = "/create3", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> createYearCount() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Stage primaryStage = Application.primaryStage;
+                primaryStage.setTitle("Line Chart Sample");
+                //defining the axes
+                final NumberAxis xAxis = new NumberAxis();
+                final NumberAxis yAxis = new NumberAxis();
+                xAxis.setLabel("Years");
+                yAxis.setLabel("Count");
+                xAxis.setAutoRanging(false);
+                xAxis.setLowerBound(1899);
+                xAxis.setUpperBound(2020);
+                //creating the chart
+                final LineChart<Number,Number> lineChart =
+                        new LineChart<Number,Number>(xAxis,yAxis);
+
+                lineChart.setTitle("Exhibit Year Monitoring");
+                lineChart.setLegendVisible(false);
+                //defining a series
+                XYChart.Series series = new XYChart.Series();
+                series.setName("--");
+                //populating the series with data
+                for(Pair<Integer, Integer> key : dao.getDates()) {
+                    series.getData().add(new XYChart.Data(key.getKey(), key.getValue()));
+                }
+                Scene scene  = new Scene(lineChart,1200,400);
+                lineChart.getData().add(series);
+
+                primaryStage.setScene(scene);
+                primaryStage.show();
+            }
+        });
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    }
 
     @RequestMapping(path = "/create2", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> createDiagramSecondQuery() {

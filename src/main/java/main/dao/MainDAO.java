@@ -167,9 +167,24 @@ public class MainDAO {
                 new Object[]{}, TICKETCOUNT_PRICE);
     }
 
+    public List<Pair<Integer, Integer>> getDates() {
+
+        return template.query(
+                "\n" +
+                        "SELECT\n" +
+                        "  count(*),\n" +
+                        "  EXTRACT(YEAR FROM date)\n" +
+                        "FROM Exhibit\n" +
+                        "GROUP BY EXTRACT(YEAR FROM date) ORDER BY date_part ;",
+                new Object[]{}, COUNT_YEAR);
+    }
+
     private static final RowMapper<SecondQueryModel> TICKETCOUNT_PRICE = (res, num) -> {
         return new SecondQueryModel(res.getString("name"), res.getInt("sum")
                 , res.getInt("count"));
+    };
+    private static final RowMapper<Pair<Integer, Integer>> COUNT_YEAR = (res, num) -> {
+        return new Pair<Integer, Integer>(res.getInt("date_part"), res.getInt("count"));
     };
 }
 
